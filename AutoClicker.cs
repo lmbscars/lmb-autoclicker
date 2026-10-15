@@ -209,20 +209,19 @@ namespace OPAutoClicker
         private Button btnStart;
         private Button btnStop;
         private Button btnHotkeySetting;
-        private Button btnChooseBg;
-        private Button btnResetBg;
         private Label lblStatus;
 
         // Title bar buttons & Theme Color
         private Button btnClose;
         private Button btnMinimize;
+        private Button btnResetBg;
         private Button btnTopBg;
         private Button btnTextColor;
         private Button btnDiscord;
         private Color currentTextColor = Color.FromArgb(0, 230, 255);
 
         // Application Version
-        public const string APP_VERSION = "1.0.0";
+        public const string APP_VERSION = "1.0.1";
 
         // Click Engine
         private Thread clickThread;
@@ -296,8 +295,8 @@ namespace OPAutoClicker
             btnClose.FlatStyle = FlatStyle.Flat;
             btnClose.FlatAppearance.BorderSize = 0;
             btnClose.FlatAppearance.MouseOverBackColor = Color.FromArgb(220, 25, 65);
-            btnClose.Size = new Size(38, 30);
-            btnClose.Location = new Point(this.Width - 46, 8);
+            btnClose.Size = new Size(36, 30);
+            btnClose.Location = new Point(this.Width - 44, 8);
             btnClose.Click += (s, e) => this.Close();
 
             btnMinimize = new Button();
@@ -308,9 +307,21 @@ namespace OPAutoClicker
             btnMinimize.FlatStyle = FlatStyle.Flat;
             btnMinimize.FlatAppearance.BorderSize = 0;
             btnMinimize.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 50, 75);
-            btnMinimize.Size = new Size(38, 30);
-            btnMinimize.Location = new Point(this.Width - 86, 8);
+            btnMinimize.Size = new Size(36, 30);
+            btnMinimize.Location = new Point(this.Width - 82, 8);
             btnMinimize.Click += (s, e) => this.WindowState = FormWindowState.Minimized;
+
+            btnResetBg = new Button();
+            btnResetBg.Text = "[Reset]";
+            btnResetBg.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+            btnResetBg.ForeColor = Color.FromArgb(0, 225, 255);
+            btnResetBg.BackColor = Color.Transparent;
+            btnResetBg.FlatStyle = FlatStyle.Flat;
+            btnResetBg.FlatAppearance.BorderSize = 0;
+            btnResetBg.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 60, 90);
+            btnResetBg.Size = new Size(56, 30);
+            btnResetBg.Location = new Point(this.Width - 140, 8);
+            btnResetBg.Click += (s, e) => ResetBackground();
 
             btnTopBg = new Button();
             btnTopBg.Text = "[+ BG]";
@@ -321,7 +332,7 @@ namespace OPAutoClicker
             btnTopBg.FlatAppearance.BorderSize = 0;
             btnTopBg.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 60, 90);
             btnTopBg.Size = new Size(56, 30);
-            btnTopBg.Location = new Point(this.Width - 146, 8);
+            btnTopBg.Location = new Point(this.Width - 198, 8);
             btnTopBg.Click += (s, e) => PromptImportBackground();
 
             btnTextColor = new Button();
@@ -332,8 +343,8 @@ namespace OPAutoClicker
             btnTextColor.FlatStyle = FlatStyle.Flat;
             btnTextColor.FlatAppearance.BorderSize = 0;
             btnTextColor.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 60, 90);
-            btnTextColor.Size = new Size(68, 30);
-            btnTextColor.Location = new Point(this.Width - 218, 8);
+            btnTextColor.Size = new Size(66, 30);
+            btnTextColor.Location = new Point(this.Width - 266, 8);
             btnTextColor.Click += (s, e) => ShowTextColorMenu(btnTextColor);
 
             btnDiscord = new Button();
@@ -344,8 +355,8 @@ namespace OPAutoClicker
             btnDiscord.FlatStyle = FlatStyle.Flat;
             btnDiscord.FlatAppearance.BorderSize = 0;
             btnDiscord.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 60, 90);
-            btnDiscord.Size = new Size(68, 30);
-            btnDiscord.Location = new Point(this.Width - 290, 8);
+            btnDiscord.Size = new Size(66, 30);
+            btnDiscord.Location = new Point(this.Width - 334, 8);
             btnDiscord.Click += (s, e) => OpenDiscordLink();
 
             // ----------------------------------------------------
@@ -511,39 +522,15 @@ namespace OPAutoClicker
 
             btnHotkeySetting = new Button();
             btnHotkeySetting.Text = "⚙ Hotkey Setting (" + settings.Hotkey + ")";
-            btnHotkeySetting.Font = new Font("Segoe UI", 9.2F, FontStyle.Bold);
+            btnHotkeySetting.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             btnHotkeySetting.ForeColor = Color.FromArgb(0, 220, 255);
             btnHotkeySetting.BackColor = Color.FromArgb(40, 20, 30, 48);
             btnHotkeySetting.FlatStyle = FlatStyle.Flat;
             btnHotkeySetting.FlatAppearance.BorderColor = Color.FromArgb(70, 0, 160, 210);
             btnHotkeySetting.Location = new Point(18, 432);
-            btnHotkeySetting.Size = new Size(246, 38);
+            btnHotkeySetting.Size = new Size(504, 38);
             btnHotkeySetting.UseVisualStyleBackColor = false;
             btnHotkeySetting.Click += BtnHotkeySetting_Click;
-
-            btnChooseBg = new Button();
-            btnChooseBg.Text = "[+] Set BG / GIF";
-            btnChooseBg.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            btnChooseBg.ForeColor = Color.FromArgb(240, 245, 255);
-            btnChooseBg.BackColor = Color.FromArgb(40, 20, 30, 48);
-            btnChooseBg.FlatStyle = FlatStyle.Flat;
-            btnChooseBg.FlatAppearance.BorderColor = Color.FromArgb(70, 0, 180, 230);
-            btnChooseBg.Location = new Point(276, 432);
-            btnChooseBg.Size = new Size(160, 38);
-            btnChooseBg.UseVisualStyleBackColor = false;
-            btnChooseBg.Click += (s, e) => PromptImportBackground();
-
-            btnResetBg = new Button();
-            btnResetBg.Text = "✕ Reset";
-            btnResetBg.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
-            btnResetBg.ForeColor = Color.FromArgb(200, 210, 230);
-            btnResetBg.BackColor = Color.FromArgb(30, 25, 35, 50);
-            btnResetBg.FlatStyle = FlatStyle.Flat;
-            btnResetBg.FlatAppearance.BorderColor = Color.FromArgb(50, 180, 190, 210);
-            btnResetBg.Location = new Point(444, 432);
-            btnResetBg.Size = new Size(78, 38);
-            btnResetBg.UseVisualStyleBackColor = false;
-            btnResetBg.Click += (s, e) => ResetBackground();
 
             lblStatus = new Label();
             lblStatus.Text = "● Status: IDLE (Press " + settings.Hotkey + " to start)";
@@ -555,13 +542,13 @@ namespace OPAutoClicker
             lblStatus.Size = new Size(504, 26);
 
             this.Controls.AddRange(new Control[] {
-                btnClose, btnMinimize, btnTopBg, btnTextColor, btnDiscord,
+                btnClose, btnMinimize, btnResetBg, btnTopBg, btnTextColor, btnDiscord,
                 txtHours, lblHours, txtMins, lblMins, txtSecs, lblSecs, txtMillis, lblMillis,
                 btnHelpRandom, chkRandomOffset, txtRandomOffset, lblRandomMs,
                 lblMouseBtn, cboMouseButton, lblClickType, cboClickType,
                 radRepeatTimes, numRepeatCount, lblTimes, radRepeatUntilStopped,
                 radCurrentLocation, radPickLocation, btnPickLocation, lblX, txtCoordX, lblY, txtCoordY,
-                btnStart, btnStop, btnHotkeySetting, btnChooseBg, btnResetBg, lblStatus
+                btnStart, btnStop, btnHotkeySetting, lblStatus
             });
 
             this.FormClosing += MainForm_FormClosing;
@@ -1175,10 +1162,10 @@ namespace OPAutoClicker
             if (btnTextColor != null) btnTextColor.ForeColor = c;
             if (btnDiscord != null) btnDiscord.ForeColor = c;
             if (btnTopBg != null) btnTopBg.ForeColor = c;
+            if (btnResetBg != null) btnResetBg.ForeColor = c;
             if (btnHelpRandom != null) { btnHelpRandom.ForeColor = c; btnHelpRandom.FlatAppearance.BorderColor = Color.FromArgb(80, c); }
             if (btnPickLocation != null) { btnPickLocation.ForeColor = c; btnPickLocation.FlatAppearance.BorderColor = Color.FromArgb(90, c); }
             if (btnHotkeySetting != null) { btnHotkeySetting.ForeColor = c; btnHotkeySetting.FlatAppearance.BorderColor = Color.FromArgb(70, c); }
-            if (btnChooseBg != null) { btnChooseBg.FlatAppearance.BorderColor = Color.FromArgb(70, c); }
 
             Color btnFore = isDarkText ? Color.FromArgb(40, 50, 65) : Color.FromArgb(200, 215, 235);
             if (btnClose != null) btnClose.ForeColor = btnFore;

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "download_url": "https://raw.githubusercontent.com/lmbscars/lmb-autoclicker/main/.gg%E2%88%95lmb%20auto%20clicker.exe",
-  "changelog": "Initial release with custom theme colors, Discord integration, and auto-updater!"
+  "changelog": "Moved Reset BG button to top header bar and cleaned up bottom controls."
 }
