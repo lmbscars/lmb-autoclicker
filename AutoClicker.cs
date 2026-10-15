@@ -87,8 +87,6 @@ namespace OPAutoClicker
         public Keys Hotkey = Keys.F6;
         public string CustomBackgroundPath = "";
         public string TextColorHex = "#00E6FF";
-        public string UpdateUrl = "https://raw.githubusercontent.com/lmbscars/lmb-autoclicker/main/version.json";
-        public bool AutoUpdateEnabled = true;
 
         public static string GetConfigPath()
         {
@@ -118,8 +116,6 @@ namespace OPAutoClicker
                 sb.AppendLine("Hotkey=" + (int)Hotkey);
                 sb.AppendLine("CustomBackgroundPath=" + (CustomBackgroundPath ?? ""));
                 sb.AppendLine("TextColorHex=" + (TextColorHex ?? ""));
-                sb.AppendLine("UpdateUrl=" + (UpdateUrl ?? ""));
-                sb.AppendLine("AutoUpdateEnabled=" + AutoUpdateEnabled);
                 File.WriteAllText(GetConfigPath(), sb.ToString());
             }
             catch { }
@@ -158,8 +154,6 @@ namespace OPAutoClicker
                             else if (k == "Hotkey") { int h; if (int.TryParse(v, out h)) s.Hotkey = (Keys)h; }
                             else if (k == "CustomBackgroundPath") s.CustomBackgroundPath = v;
                             else if (k == "TextColorHex") s.TextColorHex = v;
-                            else if (k == "UpdateUrl") s.UpdateUrl = v;
-                            else if (k == "AutoUpdateEnabled") bool.TryParse(v, out s.AutoUpdateEnabled);
                         }
                     }
                 }
@@ -220,9 +214,6 @@ namespace OPAutoClicker
         private Button btnDiscord;
         private Color currentTextColor = Color.FromArgb(0, 230, 255);
 
-        // Application Version
-        public const string APP_VERSION = "1.0.1";
-
         // Click Engine
         private Thread clickThread;
         private volatile bool isClicking = false;
@@ -234,13 +225,6 @@ namespace OPAutoClicker
 
         public MainForm()
         {
-            // Configure TLS 1.2 for modern HTTPS connections
-            try
-            {
-                ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072 | (SecurityProtocolType)768 | SecurityProtocolType.Tls;
-            }
-            catch { }
-
             settings = Settings.Load();
             InitializeComponent();
             ApplySettingsToUI();
@@ -253,12 +237,6 @@ namespace OPAutoClicker
             }
 
             this.ActiveControl = btnStart;
-
-            // Check for updates in the background on startup
-            if (settings.AutoUpdateEnabled && !string.IsNullOrEmpty(settings.UpdateUrl))
-            {
-                CheckForUpdatesAsync(false);
-            }
         }
 
         private void InitializeComponent()
@@ -913,11 +891,6 @@ namespace OPAutoClicker
 
             menu.Items.Add(new ToolStripSeparator());
 
-            ToolStripMenuItem itemCheckUpdate = new ToolStripMenuItem("🔄  Check for Updates...");
-            itemCheckUpdate.ForeColor = Color.FromArgb(0, 225, 255);
-            itemCheckUpdate.Click += (s, e) => CheckForUpdatesAsync(true);
-            menu.Items.Add(itemCheckUpdate);
-
             ToolStripMenuItem itemDiscord = new ToolStripMenuItem("💬  Join Discord (discord.gg/lmb)");
             itemDiscord.ForeColor = Color.FromArgb(120, 180, 255);
             itemDiscord.Click += (s, e) => OpenDiscordLink();
@@ -947,185 +920,6 @@ namespace OPAutoClicker
             {
                 try { Process.Start("https://discord.com/invite/lmb"); } catch { }
             }
-        }
-
-        // ==========================================
-        // AUTO-UPDATE SYSTEM
-        // ==========================================
-        private void CheckForUpdatesAsync(bool manualCheck)
-        {
-            Thread t = new Thread(new ThreadStart(() =>
-            {
-                try
-                {
-                    using (WebClient wc = new WebClient())
-                    {
-                        wc.Headers.Add("User-Agent", "lmb-autoclicker/" + APP_VERSION);
-                        string data = wc.DownloadString(settings.UpdateUrl);
-
-                        string remoteVer = ParseUpdateValue(data, "version");
-                        string downloadUrl = ParseUpdateValue(data, "download_url");
-                        string changelog = ParseUpdateValue(data, "changelog");
-
-                        if (!string.IsNullOrEmpty(remoteVer) && IsNewerVersion(remoteVer, APP_VERSION))
-                        {
-                            this.BeginInvoke(new Action(() =>
-                            {
-                                PromptAndApplyUpdate(remoteVer, downloadUrl, changelog);
-                            }));
-                        }
-                        else if (manualCheck)
-                        {
-                            this.BeginInvoke(new Action(() =>
-                            {
-                                MessageBox.Show(
-                                    "You are running the latest version of .gg/lmb auto clicker (v" + APP_VERSION + ")!",
-                                    "No Updates Found",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Information);
-                            }));
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (manualCheck)
-                    {
-                        this.BeginInvoke(new Action(() =>
-                        {
-                            MessageBox.Show(
-                                "Unable to check for updates:\n" + ex.Message,
-                                "Update Check",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning);
-                        }));
-                    }
-                }
-            }));
-            t.IsBackground = true;
-            t.Start();
-        }
-
-        private string ParseUpdateValue(string data, string key)
-        {
-            if (string.IsNullOrEmpty(data)) return "";
-
-            // 1. JSON format match: "key": "value"
-            Match mJson = Regex.Match(data, "\"" + Regex.Escape(key) + "\"\\s*:\\s*\"([^\"]+)\"", RegexOptions.IgnoreCase);
-            if (mJson.Success) return mJson.Groups[1].Value.Trim();
-
-            // 2. Key-value format match: key=value
-            Match mLine = Regex.Match(data, "(?m)^\\s*" + Regex.Escape(key) + "\\s*=\\s*(.+)$", RegexOptions.IgnoreCase);
-            if (mLine.Success) return mLine.Groups[1].Value.Trim();
-
-            return "";
-        }
-
-        private bool IsNewerVersion(string remote, string local)
-        {
-            try
-            {
-                string cleanRemote = Regex.Replace(remote.Trim(), @"^[^\d]+", "");
-                string cleanLocal = Regex.Replace(local.Trim(), @"^[^\d]+", "");
-
-                if (!cleanRemote.Contains(".")) cleanRemote += ".0";
-                if (!cleanLocal.Contains(".")) cleanLocal += ".0";
-
-                Version r = new Version(cleanRemote);
-                Version l = new Version(cleanLocal);
-                return r > l;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private void PromptAndApplyUpdate(string remoteVer, string downloadUrl, string changelog)
-        {
-            if (string.IsNullOrEmpty(downloadUrl)) return;
-
-            string msg = "A new update (v" + remoteVer + ") is available!\n";
-            if (!string.IsNullOrEmpty(changelog))
-            {
-                msg += "\nWhat's New:\n" + changelog + "\n";
-            }
-            msg += "\nWould you like to automatically download and apply the update now?";
-
-            DialogResult dr = MessageBox.Show(msg, "Update Available - .gg/lmb auto clicker", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-            if (dr == DialogResult.Yes)
-            {
-                PerformSelfUpdate(downloadUrl);
-            }
-        }
-
-        private void PerformSelfUpdate(string downloadUrl)
-        {
-            lblStatus.Text = "● Downloading update... please wait";
-            lblStatus.ForeColor = Color.FromArgb(0, 220, 255);
-
-            Thread dlThread = new Thread(new ThreadStart(() =>
-            {
-                try
-                {
-                    string tempExe = Path.Combine(Path.GetTempPath(), "lmb_update_" + Guid.NewGuid().ToString("N").Substring(0, 6) + ".exe");
-                    using (WebClient wc = new WebClient())
-                    {
-                        wc.Headers.Add("User-Agent", "lmb-autoclicker/" + APP_VERSION);
-                        wc.DownloadFile(downloadUrl, tempExe);
-                    }
-
-                    if (File.Exists(tempExe) && new FileInfo(tempExe).Length > 10000)
-                    {
-                        string currentExe = Application.ExecutablePath;
-                        string batchScript = Path.Combine(Path.GetTempPath(), "lmb_patch_" + Guid.NewGuid().ToString("N").Substring(0, 6) + ".bat");
-
-                        string batchContent =
-                            "@echo off\r\n" +
-                            "chcp 65001 >nul\r\n" +
-                            "timeout /t 1 /nobreak >nul\r\n" +
-                            ":retry\r\n" +
-                            "copy /y \"" + tempExe + "\" \"" + currentExe + "\" >nul 2>&1\r\n" +
-                            "if errorlevel 1 (\r\n" +
-                            "    timeout /t 1 /nobreak >nul\r\n" +
-                            "    goto retry\r\n" +
-                            ")\r\n" +
-                            "del \"" + tempExe + "\" >nul 2>&1\r\n" +
-                            "start \"\" \"" + currentExe + "\"\r\n" +
-                            "del \"%~f0\" >nul 2>&1\r\n" +
-                            "exit\r\n";
-
-                        File.WriteAllText(batchScript, batchContent);
-
-                        ProcessStartInfo psi = new ProcessStartInfo();
-                        psi.FileName = batchScript;
-                        psi.CreateNoWindow = true;
-                        psi.UseShellExecute = false;
-                        psi.WindowStyle = ProcessWindowStyle.Hidden;
-                        Process.Start(psi);
-
-                        Environment.Exit(0);
-                    }
-                    else
-                    {
-                        this.BeginInvoke(new Action(() =>
-                        {
-                            MessageBox.Show("Downloaded update was incomplete or invalid.", "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            SetStatusIdle();
-                        }));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    this.BeginInvoke(new Action(() =>
-                    {
-                        MessageBox.Show("Error downloading update:\n" + ex.Message, "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        SetStatusIdle();
-                    }));
-                }
-            }));
-            dlThread.IsBackground = true;
-            dlThread.Start();
         }
 
         private void AddColorPreset(ContextMenuStrip menu, string name, Color c)
