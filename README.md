@@ -1,4 +1,4 @@
-# OP Auto Clicker 4.0
+# .gg/lmb auto clicker
 
 A high-performance, standalone Windows Auto Clicker featuring the exact UI and settings layout of OP Auto Clicker 4.0.
 
