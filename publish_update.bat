@@ -2,9 +2,17 @@
 setlocal enabledelayedexpansion
 title .gg/lmb Auto Clicker - Push Update
 
+cd /d "%~dp0"
+if not exist "AutoClicker.cs" (
+    if exist "C:\Users\isabe\.gemini\antigravity\scratch\AutoClicker\AutoClicker.cs" (
+        cd /d "C:\Users\isabe\.gemini\antigravity\scratch\AutoClicker"
+    )
+)
+
 echo ===================================================
 echo     .gg/lmb Auto Clicker - Push Update Utility
 echo ===================================================
+echo Current Directory: %CD%
 echo.
 
 set /p NEW_VER="Enter New Version (e.g. 1.0.1): "
